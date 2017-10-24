@@ -37,6 +37,10 @@ for i in range(0,len(Liste)):
         Learn[i] = tab
     
 
+
+
+
+
 print(Learn)
 print(Test)
     
