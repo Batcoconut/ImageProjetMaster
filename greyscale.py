@@ -9,21 +9,46 @@ Created on Wed Oct 11 16:04:14 2017
 import cv2
 import numpy as np
 import os
+from scipy.spatial import distance
 from PIL import Image
 from matplotlib import pyplot as plt
 
 
-print('list des images')
-Liste = os.listdir('Image_data')
+def ComputeDist(H_base,H_test,label):
+    diff = np.zeros((H_base.shape[0],1))
+    
+    for i in range(0,H_base.shape[0]):
+        diff[i] = np.linalg.norm(H_test-H_base[i])
+    print(diff)
+    return label[np.argmin(diff)]
 
-img = cv2.imread('Image_data/' +Liste[1],0)
-#hsv = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
-hist = cv2.calcHist([img], [0], None, [256], [0, 256])
-plt.subplot(211), plt.plot(hist)
-plt.subplot(212), plt.imshow(img,'gray')
+print('list des images')
+Liste = os.listdir('testHist/Base')
+hist = np.zeros((len(Liste),256))
+lab = []
+
+#========= Base
+for i in range (0,len(Liste)):
+    img = cv2.imread('testHist/Base/' +Liste[i],0)
+    hist[i,:] = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
+    lab.insert(1,Liste[i])
+    plt.plot(np.linspace(0,1,256),hist[i,0:256].T, label=Liste[i])
+  #  hist[i,end] = Liste[i]
+#    plt.subplot(211), plt.plot(hist)
+ #   plt.subplot(212), plt.imshow(img,'gray')
+ #   plt.show()
+
+# Test
+  
+img = cv2.imread('testHist/test.jpg',0)
+  
+h_test = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
+
+plt.plot(np.linspace(0,1,256),h_test.T,label='test')
+plt.legend()
 plt.show()
 
-
+print(ComputeDist(hist,h_test,lab))
 # =============================================================================
 #for i in range (1,len(Liste)):
 #    print(Liste[i])
