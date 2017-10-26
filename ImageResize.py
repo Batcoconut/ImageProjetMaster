@@ -15,6 +15,7 @@ Liste = os.listdir('Image_data')
 
 
 for i in range (1,len(Liste)):
+    
     print(Liste[i])
 <<<<<<< Updated upstream
     img = Image.open ('./BaseT/' +Liste[i])
