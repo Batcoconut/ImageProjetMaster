@@ -5,12 +5,12 @@ import cv2
 import numpy as np
 from sklearn.neighbors.nearest_centroid import NearestCentroid
 import os
-
+from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
 NombrePoints = int(input('Entrer le nombre de point par bloc souhaité'))
 NombreValeurs_descripteur = NombrePoints*32
-
+n_neighbors = 5
 
 """
 Created on Tue Oct 24 09:38:11 2017
@@ -18,7 +18,7 @@ Created on Tue Oct 24 09:38:11 2017
 @author: thibault
 """
 
-LabelNotation = ["TR56" , "TR66", "TR65"]
+LabelNotation = ["TR56" , "TR66", "TR65","TR33","TR34","TR35","TR36"]
 
 
 
@@ -34,9 +34,7 @@ def Image_blocCompute(image_filename):
             crop_img = img[i*X_crop:i*X_crop + X_crop , j*Y_crop:j*Y_crop + Y_crop]
             #calcul ORB de l'image crop
             crop_orb, crop_orb_pts = ORB(crop_img)
-            if(crop_orb == None):
-                print('no descripteur')
-            else:
+            if(crop_orb != None):
                 if(len(crop_orb_pts) > NombrePoints):
                     
                     #recuperation de NombrePoints
@@ -45,15 +43,13 @@ def Image_blocCompute(image_filename):
                     
                     #integration dans le tableau des Learn
                     Liste_ORB_crop.append(val)
-                    
-                else:
-                    print('not enough points')
+
     return Liste_ORB_crop
 
 
     
 def ComputeFeatures(image_filename):
-    img = cv2.imread(filename,0)
+    img = cv2.imread(image_filename,0)
     return ORB(img)
 
 def ORB(img):
@@ -82,7 +78,7 @@ def solution_1():
         print(filename)
         
         Label[indice] = LabelNotation.index(Liste[i][0:4])
-        val = ComputeFeatures(filename)
+        val,pts = ComputeFeatures(filename)
         Learn[indice] = val.flat[:]
     
         indice = indice+1
@@ -100,7 +96,8 @@ def solution_1():
     for i in range(0,len(Liste)):
         filename = './BaseTest/' + Liste[i]
         print(filename)
-        Test[indice] = ComputeFeatures(filename)
+        val , pts = ComputeFeatures(filename)
+        Test[indice] = val.flat[:]
         indice = indice+1
     
     
@@ -118,7 +115,8 @@ def solution_1():
     
     
     for i in range(0,len(indice)):
-        print(LabelNotation[int(indice[i])])
+        print('image test : ' , Liste[i])
+        print('label res : ' , LabelNotation[int(indice[i])])
 
 
 def solution_2():
@@ -155,7 +153,7 @@ def solution_2():
         Learn[i] = Learn_tempo[i]
         Label[i] = Label_tempo[i]
     
-    clf = NearestCentroid() 
+    clf = KNeighborsClassifier(n_neighbors) 
     clf.fit(Learn,Label)
     
     """
@@ -164,10 +162,16 @@ def solution_2():
     
     Liste = os.listdir('./BaseTest')
     Test_tempo = []
+    Test_label = np.zeros((len(Liste),1))
     Image = []
+    indice = 0
     for i in range(0,len(Liste)):
         filename = './BaseTest/' + Liste[i]
         print(filename)
+        
+        Test_label[indice] = LabelNotation.index(Liste[i][0:4])
+        indice = indice+1
+        
         Image_crop = Image_blocCompute(filename)
         for val in Image_crop:
             Image.append(i)
@@ -196,8 +200,17 @@ def solution_2():
             if(tab.count(k) > tab.count(indiceMax)):
                 indiceMax=k
         
-        print('resultat image num :' , indiceMax , res)
+        print('resultat image :' ,Liste[i])
         print('Valeur la plus présente : ' , indiceMax, 'tour ' ,LabelNotation[indiceMax], ' pourcentage :'  ,int(tab.count(indiceMax)/len(tab) *100) , '%')
+        if Liste[i][0:4] == LabelNotation[indiceMax]:
+            print('')
+            print('Find success !!!')
+            print('')
+        else:
+            print('')
+            print('Find error !!!')
+            print('')
+            
 
 
 """
