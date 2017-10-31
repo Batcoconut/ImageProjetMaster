@@ -8,9 +8,9 @@ import os
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
-NombrePoints = int(input('Entrer le nombre de point par bloc souhaité'))
+NombrePoints = int(input('Entrer le nombre de point par bloc souhaité : '))
 NombreValeurs_descripteur = NombrePoints*32
-n_neighbors = 5
+n_neighbors = 4
 
 """
 Created on Tue Oct 24 09:38:11 2017
@@ -18,7 +18,7 @@ Created on Tue Oct 24 09:38:11 2017
 @author: thibault
 """
 
-LabelNotation = ["TR56" , "TR66", "TR65","TR33","TR34","TR35","TR36"]
+LabelNotation = ["TR56" , "TR66", "TR65","TR33","TR34","TR35","TR36","TR43","TR53","TR54","TR55"]
 
 
 
@@ -73,7 +73,7 @@ def solution_1():
     
     indice = 0; 
     
-    for i in range(0,len(Liste)):
+    for i in range(1,len(Liste)):
         filename = './BaseApprentissage/' + Liste[i]
         print(filename)
         
@@ -132,7 +132,7 @@ def solution_2():
     Learn_tempo = []
     Label_tempo = []
 
-    for i in range(0,len(Liste)):
+    for i in range(1,len(Liste)):
         filename = './BaseApprentissage/' + Liste[i]
         print(filename)
         
