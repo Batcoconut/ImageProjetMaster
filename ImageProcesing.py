@@ -51,7 +51,7 @@ def ResizeImage():
 
 def ORB(img):
     ##Detection des surf points
-    process = cv2.ORB_create(edgeThreshold=15, patchSize=31, nlevels=8, fastThreshold=20, scaleFactor=1.2, WTA_K=2,scoreType=cv2.ORB_HARRIS_SCORE, firstLevel=0, nfeatures=200)
+    process = cv2.ORB_create(edgeThreshold=15, patchSize=31, nlevels=8, fastThreshold=20, scaleFactor=1.2, WTA_K=2,scoreType=cv2.ORB_HARRIS_SCORE, firstLevel=0, nfeatures=50)
     #process = cv2.xfeatures2d.SIFT_create()
 
     pts , Features = process.detectAndCompute(img,None)
@@ -132,6 +132,7 @@ def compteur(tab,indice):
     return val
 
 def compteurPoids(tab,indice):
+
     val = 0;
     for i in range(0,len(tab)):
         if(tab[i] == indice):
@@ -145,6 +146,66 @@ def compteurPoids(tab,indice):
 
     return val
 
+
+def ComputeDist(H_base,H_test):
+    diff = np.zeros((H_base.shape[0],1))
+    
+    for i in range(0,H_base.shape[0]):
+        diff[i] = np.linalg.norm(H_test-H_base[i])
+   # print(diff)
+    return diff
+
+def Histoprocess():
+    
+    """
+        CONSTRUCTION BASE APPRENTISSAGE
+
+    """
+
+    Liste = os.listdir('./BaseApprentissage')
+    sz = len(Liste)
+    Learn = np.zeros((sz,256))
+    Label = np.zeros((sz,1))
+    
+    indice = 0;
+
+    for i in range(0,len(Liste)):
+        filename = './BaseApprentissage/' + Liste[i]
+        #print(filename)
+        if(Liste[i] != ".DS_Store"):
+            Label[indice] = LabelNotation.index(Liste[i][0:4])
+            img = cv2.imread(filename,0)
+            Learn[indice] = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
+            indice = indice+1
+
+    """
+       CONSTRUCTION FEATURES TEST
+    """
+    indice = 0    
+    Liste = os.listdir('./BaseTest')
+    Test =np.zeros((len(Liste),sz))
+    Test_label = np.zeros((len(Liste),1))
+    for i in range(0,len(Liste)):
+        filename = './BaseTest/' + Liste[i]    
+        if(Liste[i] != ".DS_Store"):
+                Test_label[indice] = LabelNotation.index(Liste[i][0:4])
+                indice = indice+1
+                img = cv2.imread(filename,0)
+                hist = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
+                Test[i,:]= (ComputeDist(Learn,hist)).T
+        
+    """
+        TEST BASE TEST KPPV
+    """
+    K = 5
+    Label_algo = np.zeros((len(Liste),K))
+    
+    for i in range(0,len(Liste)):
+        for j in range(0,K):
+            Label_algo[i,j] = Label[np.argmin(Test[i,:])]
+            Test[i,np.argmin(Test[i,:])] = float('inf')
+    
+    return Label_algo,Test_label
 
 def main():
     
@@ -222,10 +283,12 @@ def main():
                     indiceMax =j
             
             print('image : ',Liste[i] , ' tour find : ' , LabelNotation[indiceMax] , ' ratio val trouve :' , valeurIndiceMax,'/',len(res))
-            print(' label res premièer image : ' , LabelNotation[res[0]] , LabelNotation[res[1]] , LabelNotation[res[1]] , LabelNotation[res[1]] )
+            #print(' label res premièer image : ' , LabelNotation[res[0]] , LabelNotation[res[1]] , LabelNotation[res[1]] , LabelNotation[res[1]] )
             if Liste[i][0:4] == LabelNotation[indiceMax]:
                 sucess = sucess+1
     """
+    Label_algo_histo, Test_label_histo = Histoprocess()
+    
     Liste = os.listdir('./BaseTest')
     NombreImage = len(Liste) 
     sucess = 0;
@@ -275,6 +338,12 @@ def main():
                 else:
                     tab_score[tab_indice.index(tab_Best_res[j][0])] = tab_score[tab_indice.index(tab_Best_res[j][0])] + tab_Best_res[j][1]
 
+            histo = Label_algo_histo[i]
+            for j in range(0,len(tab_indice)):
+                #parcour tableau label_algo_histo
+                for k in range(0,len(histo)):
+                    if(histo[k] == tab_indice[j]):
+                        tab_score[j] = tab_score[j] + 10/(k+1)
 
 
             #recherche max dans tableau score pour determiner le label final
@@ -287,13 +356,14 @@ def main():
             print('               tour find : ' , LabelNotation[val_indiceMax])
             if Liste[i][0:4] == LabelNotation[val_indiceMax]:
                 sucess = sucess+1
-
+        
 
     
 
     return  sucess , nb_test
 
     
+
 
 suc, res = main()
 print(' success : ' , suc , ' / nb test : ' , res , ' / % : ' , (suc/res)*100)
