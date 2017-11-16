@@ -74,8 +74,9 @@ def Image_blocCompute(image_filename):
         for j in range(0,decoupage):
             crop_img = img[i*X_crop:i*X_crop + X_crop , j*Y_crop:j*Y_crop + Y_crop]
             #calcul ORB de l'image crop
+            crop_orb =[]
             crop_orb, crop_orb_pts = ORB(crop_img)
-            if(crop_orb != None):
+            if(len(crop_orb) != 0):
                 nombre_points = len(crop_orb)
 
                 for k in range(0,nombre_points):
@@ -104,11 +105,12 @@ def Image_blocCompute_Predict(image_filename):
         for j in range(0,decoupage):
             crop_img = img[i*X_crop:i*X_crop + X_crop , j*Y_crop:j*Y_crop + Y_crop]
             #calcul ORB de l'image crop
+            crop_orb = []
             crop_orb, crop_orb_pts = ORB(crop_img)
             Liste_ORB_crop = []
             test = True
             
-            if(crop_orb != None):
+            if(len(crop_orb) != 0):
                 nombre_points = len(crop_orb)
 
                 for k in range(0,nombre_points):
@@ -197,7 +199,7 @@ def Histoprocess():
     """
         TEST BASE TEST KPPV
     """
-    K = 5
+    K = 2
     Label_algo = np.zeros((len(Liste),K))
     
     for i in range(0,len(Liste)):
@@ -339,6 +341,10 @@ def main():
                     tab_score[tab_indice.index(tab_Best_res[j][0])] = tab_score[tab_indice.index(tab_Best_res[j][0])] + tab_Best_res[j][1]
 
             histo = Label_algo_histo[i]
+            histo = [int(i) for i in histo]
+            for k in range(0,len(histo)):
+                print('               tour find histo : ' , LabelNotation[histo[k]])
+
             for j in range(0,len(tab_indice)):
                 #parcour tableau label_algo_histo
                 for k in range(0,len(histo)):
