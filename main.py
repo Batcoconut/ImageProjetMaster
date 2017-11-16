@@ -12,7 +12,7 @@ from math import *
 from PIL import Image
 
 
-n_neighbors = 4
+n_neighbors = 2
 height = 1024
 
 """
@@ -21,7 +21,7 @@ Created on Tue Oct 24 09:38:11 2017
 @author: thibault
 """
 
-LabelNotation = ["TR56" , "TR66", "TR65","TR33","TR34","TR35","TR36","TR43","TR53","TR54","TR55"]
+LabelNotation = ["TR13" , "TR33" , "TR23" , "TR43" , "TR53" , "TR14" , "TR24" , "TR34" , "TR44" , "TR54", "TR15" , "TR25" , "TR45" , "TR55", "TR16" , "TR26" , "TR46" , "TR56","TREN"  ]
 
 def ResizeImage():
 
@@ -104,7 +104,8 @@ def solution_1():
 
     indice = 0;
 
-    for i in range(1,len(Liste)):
+    for i in range(0,len(Liste)):
+        
         filename = './BaseApprentissage/' + Liste[i]
         print(filename)
 
@@ -154,10 +155,11 @@ def solution_2():
     """
         RESIZE DE TOUTE LES IMAGES
     """
-    choix = int(input('resize image 1 oui / 2 non'))
+    choix = int(input('resize image 1 oui / 2 non : '))
     if(choix == 1):
         ResizeImage()
 
+    n_neighbors = int(input('Valeur de K : '))
     NombrePoints = int(input('Entrer le nombre de point par bloc souhaité : '))
     NombreValeurs_descripteur = NombrePoints*32
 
@@ -176,13 +178,13 @@ def solution_2():
     for i in range(1,len(Liste)):
         filename = './BaseApprentissage/' + Liste[i]
         print(filename)
+        if(Liste[i] != ".DS_Store"):
+            Image_crop = Image_blocCompute(filename,NombrePoints)
+            print('nombe de image crop correct : ' , len(Image_crop) )
 
-        Image_crop = Image_blocCompute(filename,NombrePoints)
-        print('nombe de image crop correct : ' , len(Image_crop) )
-
-        for val in Image_crop:
-            Learn_tempo.append(val)
-            Label_tempo.append(LabelNotation.index(Liste[i][0:4]))
+            for val in Image_crop:
+                Learn_tempo.append(val)
+                Label_tempo.append(LabelNotation.index(Liste[i][0:4]))
 
 
     print('Label et Learn construit Taille : ' , len(Learn_tempo), len(Label_tempo))
@@ -206,17 +208,17 @@ def solution_2():
     Test_label = np.zeros((len(Liste),1))
     Image = []
     indice = 0
-    for i in range(0,len(Liste)):
+    for i in range(1,len(Liste)):
         filename = './BaseTest/' + Liste[i]
         print(filename)
+        if(Liste[i] != ".DS_Store"):
+            Test_label[indice] = LabelNotation.index(Liste[i][0:4])
+            indice = indice+1
 
-        Test_label[indice] = LabelNotation.index(Liste[i][0:4])
-        indice = indice+1
-
-        Image_crop = Image_blocCompute(filename,NombrePoints)
-        for val in Image_crop:
-            Image.append(i)
-            Test_tempo.append(val)
+            Image_crop = Image_blocCompute(filename,NombrePoints)
+            for val in Image_crop:
+                Image.append(i)
+                Test_tempo.append(val)
 
     #construction de Test
     Test = np.zeros((len(Test_tempo),NombreValeurs_descripteur))
@@ -229,32 +231,36 @@ def solution_2():
 
     res = clf.predict(Test)
 
+    success = 0
+    nb_test = 0
+
     for i in range(0,len(Liste)):
         tab = []
-        for j in range(0,len(res)):
-            if(Image[j] == i):
-                tab.append(int(res[j]))
+        if(Liste[i] != ".DS_Store"):
+            nb_test = nb_test+1
+            for j in range(0,len(res)):
+                if(Image[j] == i):
+                    tab.append(int(res[j]))
 
-        #trouve la valeur en plus grand nombre
-        indiceMax =0
-        for k in range(0,len(LabelNotation)):
-            if(tab.count(k) > tab.count(indiceMax)):
-                indiceMax=k
+            #trouve la valeur en plus grand nombre
+            indiceMax =0
+            for k in range(0,len(LabelNotation)):
+                if(tab.count(k) > tab.count(indiceMax)):
+                    indiceMax=k
 
-        print('resultat image :' ,Liste[i])
-        print('Valeur la plus présente : ' , indiceMax, 'tour ' ,LabelNotation[indiceMax], ' pourcentage :'  ,int(tab.count(indiceMax)/len(tab) *100) , '%')
-        if Liste[i][0:4] == LabelNotation[indiceMax]:
-            print('')
-            print('Find success !!!')
-            print('')
-        else:
-            print('')
-            print('Find error !!!')
-            print('')
+            print('resultat image :' ,Liste[i])
+            if tab.count(indiceMax) != 0:
+                print('Valeur la plus présente : ' , indiceMax, 'tour ' ,LabelNotation[indiceMax], ' pourcentage :'  ,int(tab.count(indiceMax)/len(tab) *100) , '%')
+            else:
+                print('Valeur la plus présente : ' , indiceMax, 'tour ' ,LabelNotation[indiceMax])
+            if Liste[i][0:4] == LabelNotation[indiceMax]:
+                success = success+1;
+                print('success!')
 
-
+    return success, nb_test
 
 """
     APPELLE SOLUTION CHOISI
 """
-solution_2()
+suc , res =solution_2()
+print('nombre test : ' , res , ' nombre succes : ' , suc ,  ' % : ' , (suc/res)*100)
