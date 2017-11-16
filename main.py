@@ -80,7 +80,8 @@ def ComputeFeatures(image_filename):
 
 def ORB(img):
     ##Detection des surf points
-    orb = cv2.ORB_create()
+    orb = cv2.ORB_create(edgeThreshold=15, patchSize=31, nlevels=8, fastThreshold=20, scaleFactor=1.2, WTA_K=2,scoreType=cv2.ORB_HARRIS_SCORE, firstLevel=0, nfeatures=200)
+
     pts , Features = orb.detectAndCompute(img,None)
     return Features , pts
 
@@ -99,7 +100,7 @@ def solution_1():
 
     Liste = os.listdir('./BaseApprentissage')
     print(Liste)
-    Learn = np.zeros((len(Liste),16000))
+    Learn = np.zeros((len(Liste),200))
     Label = np.zeros((len(Liste),1))
 
     indice = 0;
@@ -122,7 +123,7 @@ def solution_1():
 
 
     Liste = os.listdir('./BaseTest')
-    Test = np.zeros((len(Liste),16000))
+    Test = np.zeros((len(Liste),200))
     indice = 0
 
     for i in range(0,len(Liste)):
@@ -262,5 +263,5 @@ def solution_2():
 """
     APPELLE SOLUTION CHOISI
 """
-suc , res =solution_2()
+suc , res =solution_1()
 print('nombre test : ' , res , ' nombre succes : ' , suc ,  ' % : ' , (suc/res)*100)

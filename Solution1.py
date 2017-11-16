@@ -15,7 +15,7 @@ from PIL import Image
 
 
 
-n_neighbors = 2
+n_neighbors = 1
 height = 1024
 
 
@@ -60,41 +60,19 @@ def Image_blocCompute(image_filename):
     Liste_ORB_crop = []
     test = True
     
-    """
+    
     #on applique direct sur l'image entière
     crop_orb, crop_orb_pts = ORB(img)
     if(crop_orb != None):
-        for k in range(0,len(crop_orb)):
+        nombre_points = len(crop_orb)
+        nombre_points = 200
+        for k in range(0,nombre_points):
             val = crop_orb[k].astype(int)
             if(test):
                 Liste_ORB_crop = val
                 test =False
             else:
                 Liste_ORB_crop = np.vstack((Liste_ORB_crop,val))
-
-
-    
-    """
-    taille = img.shape
-    X_crop = int(taille[0]/3)
-    Y_crop = int(taille[1]/3)
-
-
-    for i in range(0,3):
-        for j in range(0,3):
-            crop_img = img[i*X_crop:i*X_crop + X_crop , j*Y_crop:j*Y_crop + Y_crop]
-            #calcul ORB de l'image crop
-            crop_orb, crop_orb_pts = ORB(crop_img)
-            if(crop_orb != None):
-                for k in range(0,len(crop_orb)):
-                    val = crop_orb[k].astype(int)
-                    if(test):
-                        Liste_ORB_crop = val
-                        test =False
-                    else:
-                        Liste_ORB_crop = np.vstack((Liste_ORB_crop,val))
-    
-    
 
     return Liste_ORB_crop
 
@@ -188,6 +166,7 @@ def main():
                     indiceMax =j
             
             print('image : ',Liste[i] , ' tour find : ' , LabelNotation[indiceMax] , ' ratio val trouve :' , valeurIndiceMax,'/',len(res))
+            print(' label res premièer image : ' , LabelNotation[res[0]] , LabelNotation[res[1]] , LabelNotation[res[1]] , LabelNotation[res[1]] )
             if Liste[i][0:4] == LabelNotation[indiceMax]:
                 sucess = sucess+1
     
