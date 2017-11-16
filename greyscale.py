@@ -20,7 +20,7 @@ def ComputeDist(H_base,H_test,label):
     for i in range(0,H_base.shape[0]):
         diff[i] = np.linalg.norm(H_test-H_base[i])
     print(diff)
-    return label[np.argmin(diff)]
+    return diff#label[np.argmin(diff)]
 
 print('list des images')
 Liste = os.listdir('testHist/Base')
@@ -68,3 +68,42 @@ print(ComputeDist(hist,h_test,lab))
 #     
 #     cv2.imshow('colorhist',h)
 # =============================================================================
+
+
+def solution_3():
+    
+    """
+        RESIZE DE TOUTE LES IMAGES
+    """
+    choix = int(input('resize image 1 oui / 2 non'))
+    if(choix == 1):
+        ResizeImage()
+
+    """
+        CONSTRUCTION BASE APPRENTISSAGE
+
+    """
+
+    Liste = os.listdir('./BaseApprentissage')
+    print(Liste)
+    Learn = np.zeros((len(Liste),16000))
+    Label = np.zeros((len(Liste),1))
+
+    indice = 0;
+
+    for i in range(1,len(Liste)):
+        filename = './BaseApprentissage/' + Liste[i]
+        print(filename)
+
+        Label[indice] = LabelNotation.index(Liste[i][0:4])
+        val,pts = ComputeFeatures(filename)
+        Learn[indice] = val.flat[:]
+
+        indice = indice+1
+
+    
+    
+    
+    
+    
+    
