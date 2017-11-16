@@ -111,11 +111,4 @@ for i in range(0,len(Res)):
 
 print('Succès 1er: ',suc1, 'Succès 2eme: ', suc2, 'Succès 3eme: ', suc3, 'Succès 4eme: ', suc4, 'Succès 5eme: ', suc5)
 print('Pourcentage réussite: ', suc1/len(Test_label)*100)
-#print('nombre test : ' , res , ' nombre succes : ' , suc ,  ' % : ' , (suc/res)*100)
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 16 21:45:48 2017
-
-@author: Chamoulox
-"""
 
