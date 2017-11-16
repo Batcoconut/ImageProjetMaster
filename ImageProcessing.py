@@ -201,13 +201,15 @@ def Histoprocess():
     """
     K = 2
     Label_algo = np.zeros((len(Liste),K))
+    Dist_algo = np.zeros((len(Liste),K))
     
     for i in range(0,len(Liste)):
         for j in range(0,K):
             Label_algo[i,j] = Label[np.argmin(Test[i,:])]
+            Dist_algo[i,j] = Test[i,np.argmin(Test[i,:])]
             Test[i,np.argmin(Test[i,:])] = float('inf')
     
-    return Label_algo,Test_label
+    return Label_algo,Test_label,Dist_algo
 
 def main():
     
@@ -289,7 +291,7 @@ def main():
             if Liste[i][0:4] == LabelNotation[indiceMax]:
                 sucess = sucess+1
     """
-    Label_algo_histo, Test_label_histo = Histoprocess()
+    Label_algo_histo, Test_label_histo, Dist_algo = Histoprocess()
     
     Liste = os.listdir('./BaseTest')
     NombreImage = len(Liste) 
