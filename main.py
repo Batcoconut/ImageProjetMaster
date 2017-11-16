@@ -259,8 +259,76 @@ def solution_2():
 
     return success, nb_test
 
+def ComputeDist(H_base,H_test):
+    diff = np.zeros((H_base.shape[0],1))
+    
+    for i in range(0,H_base.shape[0]):
+        diff[i] = np.linalg.norm(H_test-H_base[i])
+   # print(diff)
+    return diff
+
+def solution_3():
+    
+    """
+        RESIZE DE TOUTE LES IMAGES
+    """
+    choix = int(input('resize image 1 oui / 2 non'))
+    if(choix == 1):
+        ResizeImage()
+
+    """
+        CONSTRUCTION BASE APPRENTISSAGE
+
+    """
+
+    Liste = os.listdir('./BaseApprentissage')
+    print(Liste)
+    sz = len(Liste)
+    Learn = np.zeros((sz,256))
+    Label = np.zeros((sz,1))
+    
+    indice = 0;
+
+    for i in range(1,len(Liste)):
+        filename = './BaseApprentissage/' + Liste[i]
+        #print(filename)
+
+        Label[indice] = LabelNotation.index(Liste[i][0:4])
+        img = cv2.imread(filename,0)
+        Learn[indice] = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
+        indice = indice+1
+
+    """
+       CONSTRUCTION FEATURES TEST
+    """
+    indice = 0    
+    Liste = os.listdir('./BaseTest')
+    Test =np.zeros((len(Liste),sz))
+    Test_label = np.zeros((len(Liste),1))
+    for i in range(0,len(Liste)):
+        filename = './BaseTest/' + Liste[i]    
+        print(filename)
+        if(Liste[i] != ".DS_Store"):
+                Test_label[indice] = LabelNotation.index(Liste[i][0:4])
+                indice = indice+1
+                img = cv2.imread(filename,0)
+                hist = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
+                Test[i,:]= (ComputeDist(Learn,hist)).T
+        
+    """
+        TEST BASE TEST KPPV
+    """
+    K = 5
+    Label_algo = np.zeros((len(Liste),K))
+    
+    for i in range(0,len(Liste)):
+        for j in range(0,K):
+            Label_algo[i,j] = Label[np.argmin(Test[i,:])]
+            Test[i,np.argmin(Test[i,:])] = float('inf')
+    
+    return Label_algo,Test_label
 """
     APPELLE SOLUTION CHOISI
 """
-suc , res =solution_2()
-print('nombre test : ' , res , ' nombre succes : ' , suc ,  ' % : ' , (suc/res)*100)
+Label_algo, Test_label = solution_3()
+#print('nombre test : ' , res , ' nombre succes : ' , suc ,  ' % : ' , (suc/res)*100)
