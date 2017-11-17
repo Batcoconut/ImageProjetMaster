@@ -347,15 +347,18 @@ def main():
                 sucess = sucess+1
     """
     Label_algo_histo, Test_label_histo, Dist_algo = Histoprocess()
-    print(len(Dist_algo))
+    print(Label_algo_histo)
+    print(Dist_algo)
     Liste = os.listdir('./BaseTest')
     NombreImage = len(Liste) 
     sucess = 0;
     nb_test =0;
+    indice = 0 
 
     for i in range(0,NombreImage):
         filename = './BaseTest/' + Liste[i]
         if(Liste[i] !=".DS_Store"):
+            
             nb_test =nb_test+1
             Features_test = Image_blocCompute_Predict(filename)
 
@@ -397,10 +400,13 @@ def main():
                 else:
                     tab_score[tab_indice.index(tab_Best_res[j][0])] = tab_score[tab_indice.index(tab_Best_res[j][0])] + tab_Best_res[j][1]
 
-            histo = Label_algo_histo[i]
+
+            histo = Label_algo_histo[indice]
+            distance = Dist_algo[indice]
+            indice +=1
             histo = [int(i) for i in histo]
             for k in range(0,len(histo)):
-                print('               tour find histo : ' , LabelNotation[histo[k]])
+                print('               tour find histo : ' , LabelNotation[histo[k]] ,'  distance : ' , distance[k] )
 
             test_histo =  False
             for j in range(0,len(tab_indice)):
@@ -415,6 +421,7 @@ def main():
 
             #on prend soi les majoritaires soi le premier
             if(not test_histo):
+                
                 indice_histo = histo[0]
                 ite =1
                 for j in range(0,len(histo)):
@@ -440,6 +447,11 @@ def main():
                         val_max = tab_score[j]
                         val_indiceMax = tab_indice[j]
                 print('               tour find : ' , LabelNotation[val_indiceMax])
+
+                #si distance < 20 000
+                if (distance[0] < 25000 and test_histo == False):
+                    val_indiceMax = histo[0]
+
 
 
                 if Liste[i][0:4] == LabelNotation[val_indiceMax]:
