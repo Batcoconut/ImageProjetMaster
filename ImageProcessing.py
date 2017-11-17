@@ -63,6 +63,14 @@ def ORB(img):
     pts , Features = process.detectAndCompute(img,None)
     return Features , pts
 
+def ORB_match(img):
+    ##Detection des surf points
+    process = cv2.ORB_create(edgeThreshold=15, patchSize=31, nlevels=8, fastThreshold=20, scaleFactor=1.2, WTA_K=2,scoreType=cv2.ORB_HARRIS_SCORE, firstLevel=0, nfeatures=80)
+    #process = cv2.xfeatures2d.SIFT_create()
+
+    pts , Features = process.detectAndCompute(img,None)
+    return Features 
+
 def Image_blocCompute(image_filename):
     img = cv2.imread(image_filename,0)
     Liste_ORB_crop = []
@@ -202,7 +210,11 @@ def Histoprocess():
     """
 
     Liste = os.listdir('./BaseApprentissage')
-    sz = len(Liste)
+    test = 0
+    for i in range(0,len(Liste)):
+        if(Liste[i] != ".DS_Store"):
+            test = 1
+    sz = len(Liste) - test
     Learn = np.zeros((sz,256))
     Label = np.zeros((sz,1))
     
@@ -222,8 +234,13 @@ def Histoprocess():
     """
     indice = 0    
     Liste = os.listdir('./BaseTest')
-    Test =np.zeros((len(Liste),sz))
-    Test_label = np.zeros((len(Liste),1))
+    test = 0
+    for i in range(0,len(Liste)):
+        if(Liste[i] != ".DS_Store"):
+            test = 1
+
+    Test =np.zeros((len(Liste)-test,sz))
+    Test_label = np.zeros((len(Liste)-test,1))
     for i in range(0,len(Liste)):
         filename = './BaseTest/' + Liste[i]    
         if(Liste[i] != ".DS_Store"):
@@ -232,6 +249,7 @@ def Histoprocess():
                 img = cv2.imread(filename,0)
                 hist = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
                 Test[i,:]= (ComputeDist(Learn,hist)).T
+                
         
     """
         TEST BASE TEST KPPV
@@ -325,7 +343,7 @@ def main():
                 sucess = sucess+1
     """
     Label_algo_histo, Test_label_histo, Dist_algo = Histoprocess()
-    
+    print(Dist_algo)
     Liste = os.listdir('./BaseTest')
     NombreImage = len(Liste) 
     sucess = 0;
@@ -428,9 +446,57 @@ def main():
 
     return  sucess , nb_test
 
+def SytemMatch():
+    #choix = int(input('resize image 1 oui / 2 non : '))
 
 
+    Liste1 = os.listdir('./BaseApprentissage')
+    Liste = os.listdir('./BaseTest')
+    
+    NombreImage = len(Liste1) 
+    NombreImage_test = len(Liste)
 
+    orb = cv2.ORB_create(edgeThreshold=15, patchSize=31, nlevels=8, fastThreshold=20, scaleFactor=1.2, WTA_K=2,scoreType=cv2.ORB_HARRIS_SCORE, firstLevel=0, nfeatures=200)
+    Features_tab = []
+    Label_tab = []
 
+    succes = 0 
+
+    for j in range(0,NombreImage_test):
+        filename =  './BaseTest/'+ Liste[j]
+        print(Liste[j])
+        if(Liste[j] != ".DS_Store"):
+            img = cv2.imread(filename,NombreImage)
+            kp1, des1 = orb.detectAndCompute(img,None)
+
+            score = np.zeros(len(LabelNotation))
+            
+
+            for i in range(0,NombreImage):
+                filename2 =  './BaseApprentissage/'+ Liste1[i]
+                if(Liste1[i] !=".DS_Store"):
+                    img2 = cv2.imread(filename2,0)
+                    kp2, des2 = orb.detectAndCompute(img2,None)
+
+                    bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
+                    # Match descriptors
+                    matches = bf.match(des1,des2)
+                    # Sort them in the order of their distance.
+                    matches = sorted(matches, key = lambda x:x.distance)
+                    score[LabelNotation.index(Liste1[i][0:4])] += len(matches)
+
+            #recherche de la valeur max
+            indice_max = 0
+            valeur_max=0
+            for i in range(0,len(score)):
+                if(score[i]>valeur_max):
+                    indice_max = i
+                    valeur_max = score[i]
+
+            print('Tour : ' , Liste[j] , ' / Tour find : ' , Liste1[indice_max] , ' / avec matches pts : ' , valeur_max)
+
+    
 suc, res = main()
 print(' success : ' , suc , ' / nb test : ' , res , ' / % : ' , (suc/res)*100)
+
+#SytemMatch()
