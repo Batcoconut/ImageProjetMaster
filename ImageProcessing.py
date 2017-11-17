@@ -9,13 +9,19 @@ import os
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
+
+from sklearn.cluster import KMeans
+
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
+
 from math import *
 from PIL import Image
 
 
 
 
-n_neighbors = 1
+n_neighbors = 8
 height = 1024
 
 
@@ -88,7 +94,6 @@ def Image_blocCompute(image_filename):
                         Liste_ORB_crop = np.vstack((Liste_ORB_crop,val))
     return Liste_ORB_crop
 
-
 def Image_blocCompute_Predict(image_filename):
     img = cv2.imread(image_filename,0)
     Liste_ORB_crop_tab = []
@@ -126,6 +131,39 @@ def Image_blocCompute_Predict(image_filename):
     return Liste_ORB_crop_tab
 
 
+    img = cv2.imread(image_filename,0)
+    Liste_ORB_crop_tab = []
+    
+
+    
+    taille = img.shape
+    decoupage = 2
+    X_crop = int(taille[0]/decoupage)
+    Y_crop = int(taille[1]/decoupage)
+
+
+    for i in range(0,decoupage):
+        for j in range(0,decoupage):
+            crop_img = img[i*X_crop:i*X_crop + X_crop , j*Y_crop:j*Y_crop + Y_crop]
+            #calcul ORB de l'image crop
+            crop_orb = []
+            crop_orb, crop_orb_pts = ORB(crop_img)
+            Liste_ORB_crop = []
+            test = True
+            
+            if(len(crop_orb) != 0):
+                nombre_points = len(crop_orb)
+
+                for k in range(0,nombre_points):
+                    val = crop_orb[k].astype(int)
+                    for id in val:
+                        Liste_ORB_crop.append(id)
+    
+
+                Liste_ORB_crop_tab.append(Liste_ORB_crop)
+
+    return Liste_ORB_crop_tab
+
 def compteur(tab,indice):
     val = 0;
     for i in range(0,len(tab)):
@@ -147,7 +185,6 @@ def compteurPoids(tab,indice):
 
 
     return val
-
 
 def ComputeDist(H_base,H_test):
     diff = np.zeros((H_base.shape[0],1))
@@ -199,7 +236,7 @@ def Histoprocess():
     """
         TEST BASE TEST KPPV
     """
-    K = 2
+    K = 4
     Label_algo = np.zeros((len(Liste),K))
     
     for i in range(0,len(Liste)):
@@ -252,14 +289,10 @@ def main():
 
     
     #Apprentissage a partir de la base de donnée d'apprentissage
-    clf = KNeighborsClassifier(n_neighbors)
-
-    print('Nombre de points apprentissage : ' , len(Learn))
-
-
-
+    clf = KNeighborsClassifier(n_neighbors=1,algorithm='auto',weights='uniform')
     clf.fit(Learn,Label)
-    
+
+    print('Fin construction classifieur')
     #Construction Base test
     
     
@@ -345,30 +378,56 @@ def main():
             for k in range(0,len(histo)):
                 print('               tour find histo : ' , LabelNotation[histo[k]])
 
+            test_histo =  False
             for j in range(0,len(tab_indice)):
                 #parcour tableau label_algo_histo
                 for k in range(0,len(histo)):
                     if(histo[k] == tab_indice[j]):
                         tab_score[j] = tab_score[j] + 10/(k+1)
+                        test_histo = True
+
+            #verifie si la diff de score est pas assez importante
+            
+
+            #on prend soi les majoritaires soi le premier
+            if(not test_histo):
+                indice_histo = histo[0]
+                ite =1
+                for j in range(0,len(histo)):
+                    tempo =0
+                    for k in range(0,len(histo)):
+                        if(histo[j] == histo[k]):
+                            tempo = tempo+1
+
+                    if(tempo > ite):
+                        ite = tempo
+                        indice_histo = histo[j]
+                
+                if Liste[i][0:4] == LabelNotation[indice_histo]:
+                    sucess = sucess+1
+
+            else:
+
+                #recherche max dans tableau score pour determiner le label final
+                val_max =0
+                val_indiceMax =0
+                for j in range(0,len(tab_score)):
+                    if(tab_score[j] > val_max):
+                        val_max = tab_score[j]
+                        val_indiceMax = tab_indice[j]
+                print('               tour find : ' , LabelNotation[val_indiceMax])
 
 
-            #recherche max dans tableau score pour determiner le label final
-            val_max =0
-            val_indiceMax =0
-            for j in range(0,len(tab_score)):
-                if(tab_score[j] > val_max):
-                    val_max = tab_score[j]
-                    val_indiceMax = tab_indice[j]
-            print('               tour find : ' , LabelNotation[val_indiceMax])
-            if Liste[i][0:4] == LabelNotation[val_indiceMax]:
-                sucess = sucess+1
-        
+                if Liste[i][0:4] == LabelNotation[val_indiceMax]:
+                    sucess = sucess+1
+            
 
     
 
     return  sucess , nb_test
 
-    
+
+
 
 
 suc, res = main()

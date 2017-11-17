@@ -331,10 +331,5 @@ def solution_3():
 """
     APPELLE SOLUTION CHOISI
 """
-<<<<<<< HEAD
-suc , res =solution_1()
-print('nombre test : ' , res , ' nombre succes : ' , suc ,  ' % : ' , (suc/res)*100)
-=======
 Label_algo, Test_label = solution_3()
 #print('nombre test : ' , res , ' nombre succes : ' , suc ,  ' % : ' , (suc/res)*100)
->>>>>>> 42e579472d4ba48cabbc1d9d16c994c1e6268bb4
