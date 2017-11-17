@@ -3,22 +3,9 @@
 
 import cv2
 import numpy as np
-from collections import Counter
-from sklearn.neighbors.nearest_centroid import NearestCentroid
 import os
 from sklearn.neighbors import KNeighborsClassifier
-import matplotlib.pyplot as plt
-
-
-from sklearn.cluster import KMeans
-
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-
-
-from math import *
 from PIL import Image
-
-
 
 
 n_neighbors = 8
@@ -473,10 +460,6 @@ def SytemMatch():
     NombreImage_test = len(Liste)
 
     orb = cv2.ORB_create(edgeThreshold=15, patchSize=31, nlevels=8, fastThreshold=20, scaleFactor=1.2, WTA_K=2,scoreType=cv2.ORB_HARRIS_SCORE, firstLevel=0, nfeatures=200)
-    Features_tab = []
-    Label_tab = []
-
-    succes = 0 
 
     for j in range(0,NombreImage_test):
         filename =  './BaseTest/'+ Liste[j]
@@ -510,8 +493,28 @@ def SytemMatch():
                     valeur_max = score[i]
 
             print('Tour : ' , Liste[j] , ' / Tour find : ' , Liste1[indice_max] , ' / avec matches pts : ' , valeur_max)
+""" 
+Label_algo, Test_label,Dist_algo = Histoprocess()
+Res = Label_algo - Test_label
+suc1 = 0
+suc2 = 0
+suc3 = 0
+suc4 = 0
+for i in range(0,len(Res)):
+        if Res[i,0] == 0:
+            suc1+=1
+        elif Res[i,1] == 0:
+            suc2+=1
+        elif Res[i,2] == 0:
+            suc3+=1
+        elif Res[i,3] == 0:
+            suc4+=1
 
-    
+print('Succès 1er: ',suc1, 'Succès 2eme: ', suc2, 'Succès 3eme: ', suc3, 'Succès 4eme: ', suc4)
+print('Pourcentage réussite: ', suc1/len(Test_label)*100)
+print(confusion_matrix(Test_label, Label_algo[:,0]))
+
+"""   
 suc, res = main()
 print(' success : ' , suc , ' / nb test : ' , res , ' / % : ' , (suc/res)*100)
 
