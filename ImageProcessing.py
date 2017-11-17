@@ -210,11 +210,12 @@ def Histoprocess():
     """
 
     Liste = os.listdir('./BaseApprentissage')
-    test = 0
+    sz = len(Liste)
+    
     for i in range(0,len(Liste)):
-        if(Liste[i] != ".DS_Store"):
-            test = 1
-    sz = len(Liste) - test
+        if Liste[i] == ".DS_Store":
+            sz = sz -1;
+            
     Learn = np.zeros((sz,256))
     Label = np.zeros((sz,1))
     
@@ -232,9 +233,17 @@ def Histoprocess():
     """
        CONSTRUCTION FEATURES TEST
     """
+    
+    
     indice = 0    
     Liste = os.listdir('./BaseTest')
-    test = 0
+    sz2 = len(Liste)
+    for i in range(0,len(Liste)):
+        if Liste[i] == ".DS_Store":
+            sz2 = sz2 -1;
+            
+    Test =np.zeros((len(Liste),sz))
+    Test_label = np.zeros((len(Liste),1))
     for i in range(0,len(Liste)):
         if(Liste[i] != ".DS_Store"):
             test = 1
