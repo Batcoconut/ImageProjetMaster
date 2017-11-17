@@ -1,84 +1,39 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Oct 11 16:04:14 2017
-
-@author: alexis
-"""
 
 import cv2
 import numpy as np
+from sklearn.neighbors.nearest_centroid import NearestCentroid
 import os
-from scipy.spatial import distance
+from sklearn.neighbors import KNeighborsClassifier
+import matplotlib.pyplot as plt
+
+from math import *
 from PIL import Image
-from matplotlib import pyplot as plt
 
 
-def ComputeDist(H_base,H_test,label):
+n_neighbors = 2
+height = 1024
+
+"""
+Created on Tue Oct 24 09:38:11 2017
+
+@author: thibault
+"""
+
+LabelNotation = ["TR13" , "TR33" , "TR23" , "TR43" , "TR53" , "TR14" , "TR24" , "TR34" , "TR44" , "TR54", "TR15" , "TR25" , "TR45" , "TR55", "TR16" , "TR26" , "TR46" , "TR56","TREN"  ]
+
+
+def ComputeDist(H_base,H_test):
     diff = np.zeros((H_base.shape[0],1))
     
     for i in range(0,H_base.shape[0]):
+       
         diff[i] = np.linalg.norm(H_test-H_base[i])
-    print(diff)
-    return diff#label[np.argmin(diff)]
-
-print('list des images')
-Liste = os.listdir('testHist/Base')
-hist = np.zeros((len(Liste),256))
-lab = []
-
-#========= Base
-for i in range (0,len(Liste)):
-    img = cv2.imread('testHist/Base/' +Liste[i],0)
-    hist[i,:] = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
-    lab.insert(1,Liste[i])
-    plt.plot(np.linspace(0,1,256),hist[i,0:256].T, label=Liste[i])
-  #  hist[i,end] = Liste[i]
-#    plt.subplot(211), plt.plot(hist)
- #   plt.subplot(212), plt.imshow(img,'gray')
- #   plt.show()
-
-# Test
-  
-img = cv2.imread('testHist/test.jpg',0)
-  
-h_test = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
-
-plt.plot(np.linspace(0,1,256),h_test.T,label='test')
-plt.legend()
-plt.show()
-
-print(ComputeDist(hist,h_test,lab))
-# =============================================================================
-#for i in range (1,len(Liste)):
-#    print(Liste[i])
-#   img = cv2.imread('Image_data/' +Liste[i])    
-#   cv2.imshow(img,)
-#
-#     
-#     h = np.zeros((50,256))
-#     bins = np.arange(32).reshape(32,1)
-#     hist_item = cv2.calcHist([img],0,None,[32],[0,256])
-#     cv2.normalize(hist_item,hist_item,64,cv2.NORM_MINMAX)
-#     hist=np.int32(np.around(hist_item))
-#     pts = np.column_stack((bins,hist))
-#     cv2.polylines(h,[pts],False,(255,255,255))
-#     
-#     h=np.flipud(h)
-#     
-#     cv2.imshow('colorhist',h)
-# =============================================================================
-
+   # print(diff)
+    return diff
 
 def solution_3():
-    
-    """
-        RESIZE DE TOUTE LES IMAGES
-    """
-    choix = int(input('resize image 1 oui / 2 non'))
-    if(choix == 1):
-        ResizeImage()
-
     """
         CONSTRUCTION BASE APPRENTISSAGE
 
@@ -86,24 +41,74 @@ def solution_3():
 
     Liste = os.listdir('./BaseApprentissage')
     print(Liste)
-    Learn = np.zeros((len(Liste),16000))
-    Label = np.zeros((len(Liste),1))
-
+    sz = len(Liste)
+    Learn = np.zeros((sz,256))
+    Label = np.zeros((sz,1))
+    
     indice = 0;
 
-    for i in range(1,len(Liste)):
+    for i in range(0,len(Liste)):
         filename = './BaseApprentissage/' + Liste[i]
-        print(filename)
+        #print(filename)
 
         Label[indice] = LabelNotation.index(Liste[i][0:4])
-        val,pts = ComputeFeatures(filename)
-        Learn[indice] = val.flat[:]
-
+        img = cv2.imread(filename,0)
+        Learn[indice] = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
         indice = indice+1
 
+    """
+       CONSTRUCTION FEATURES TEST
+    """
+    indice = 0    
+    Liste = os.listdir('./BaseTest')
+    Test =np.zeros((len(Liste),sz))
+    Test_label = np.zeros((len(Liste),1))
+    for i in range(0,len(Liste)):
+        filename = './BaseTest/' + Liste[i]    
+        #print(filename)
+        if(Liste[i] != ".DS_Store"):
+                Test_label[indice] = LabelNotation.index(Liste[i][0:4])
+                indice = indice+1
+                img = cv2.imread(filename,0)
+                hist = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
+                Test[i,:]= (ComputeDist(Learn,hist)).T
+        
+    """
+        TEST BASE TEST KPPV
+    """
+    K = 5
+    Label_algo = np.zeros((len(Liste),K))
+    Dist_algo = np.zeros((len(Liste),K))
+    for i in range(0,len(Liste)):
+        for j in range(0,K):
+            Label_algo[i,j] = Label[np.argmin(Test[i,:])]
+            Dist_algo[i,j] = Test[i,np.argmin(Test[i,:])]
+            Test[i,np.argmin(Test[i,:])] = float('inf')
     
-    
-    
-    
-    
-    
+    return Label_algo,Test_label,Dist_algo
+"""
+    APPELLE SOLUTION CHOISI
+"""
+Label_algo, Test_label,Dist_algo = solution_3()
+
+Res = Label_algo - Test_label
+suc1 = 0
+suc2 = 0
+suc3 = 0
+suc4 = 0
+suc5 = 0
+for i in range(0,len(Res)):
+        if Res[i,0] == 0:
+            suc1+=1
+        elif Res[i,1] == 0:
+            suc2+=1
+        elif Res[i,2] == 0:
+            suc3+=1
+        elif Res[i,3] == 0:
+            suc4+=1
+        elif Res[i,4] == 0:
+            suc5+=1
+
+print('Succès 1er: ',suc1, 'Succès 2eme: ', suc2, 'Succès 3eme: ', suc3, 'Succès 4eme: ', suc4, 'Succès 5eme: ', suc5)
+print('Pourcentage réussite: ', suc1/len(Test_label)*100)
+
