@@ -242,32 +242,27 @@ def Histoprocess():
         if Liste[i] == ".DS_Store":
             sz2 = sz2 -1;
             
-    Test =np.zeros((len(Liste),sz))
-    Test_label = np.zeros((len(Liste),1))
-    for i in range(0,len(Liste)):
-        if(Liste[i] != ".DS_Store"):
-            test = 1
-
-    Test =np.zeros((len(Liste)-test,sz))
-    Test_label = np.zeros((len(Liste)-test,1))
+    Test =np.zeros((sz2,sz))
+    Test_label = np.zeros((sz2,1))
     for i in range(0,len(Liste)):
         filename = './BaseTest/' + Liste[i]    
         if(Liste[i] != ".DS_Store"):
                 Test_label[indice] = LabelNotation.index(Liste[i][0:4])
-                indice = indice+1
                 img = cv2.imread(filename,0)
                 hist = (cv2.calcHist([img], [0], None, [256], [0, 256])).T
-                Test[i,:]= (ComputeDist(Learn,hist)).T
+                Test[indice,:]= (ComputeDist(Learn,hist)).T
+                indice = indice+1
                 
         
     """
         TEST BASE TEST KPPV
     """
     K = 4
-    Label_algo = np.zeros((len(Liste),K))
-    Dist_algo = np.zeros((len(Liste),K))
     
-    for i in range(0,len(Liste)):
+    Label_algo = np.zeros((sz2,K))
+    Dist_algo = np.zeros((sz2,K))
+    
+    for i in range(0,sz2):
         for j in range(0,K):
             Label_algo[i,j] = Label[np.argmin(Test[i,:])]
             Dist_algo[i,j] = Test[i,np.argmin(Test[i,:])]
@@ -352,7 +347,7 @@ def main():
                 sucess = sucess+1
     """
     Label_algo_histo, Test_label_histo, Dist_algo = Histoprocess()
-    print(Dist_algo)
+    print(len(Dist_algo))
     Liste = os.listdir('./BaseTest')
     NombreImage = len(Liste) 
     sucess = 0;
